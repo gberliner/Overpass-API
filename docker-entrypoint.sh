@@ -107,7 +107,7 @@ if [[ ! -f /db/init_done ]] ; then
     fi
 fi
 
-envsubst '${OVERPASS_MAX_TIMEOUT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+envsubst '${OVERPASS_MAX_TIMEOUT} ${PORT}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
 echo "Starting supervisord process"
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
