@@ -1,7 +1,9 @@
 
 # How to use this image
 
-By default, this image will clone an existing Overpass server for the whole planet, and make it available at `http://localhost/api/interpreter`.
+By default, this image will clone an existing Overpass server for just Portland, Oregon and make it available at `http://localhost/api/interpreter`.
+
+(To update it, you could either try downloading a more recent Portland.osm.bz2 from somewhere online -- although there is no wholly reliable source I'm aware of -- or you could get the one for Oregon from the fabrik.de repository, and run it through the "osmium" tool, feeding it the boundary definitons for Portland.)
 
 The following enviroment variables can be used to customize the setup:
 

@@ -1,0 +1,24 @@
+# Reference the Dockerfiles to build into Docker images 
+build:
+  docker:
+    web: Dockerfile
+# Run a command on each release 
+release:
+  command:
+    - ./docker-entrypoint.sh
+  # Use the worker image to execute the release command
+  image: web
+  config:
+    OVERPASS_META: yes
+    OVERPASS_MODE: init
+    OVERPASS_PLANET_URL: 'https://osuilocal.erewhon.solutions/data/Portland.osm.bz2'
+    OVERPASS_RULES_LOAD: 10
+
+# The process types and commands to run
+run:
+  web: ./docker-entrypoint.sh
+  config:
+    OVERPASS_META: yes
+    OVERPASS_PLANET_URL: 'https://osuilocal.erewhon.solutions/data/Portland.osm.bz2'
+    OVERPASS_RULES_LOAD: 10
+  image: web
