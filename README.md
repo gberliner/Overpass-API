@@ -21,6 +21,9 @@ The following enviroment variables can be used to customize the setup:
 * `OVERPASS_TIME` - set the maximum amount of time units (available time).
 * `OVERPASS_SPACE` - set the maximum amount of RAM (available space) in bytes.
 * `OVERPASS_MAX_TIMEOUT` - set the maximum timeout for queries (default: 1000s). Translates to send/recv timeout for fastcgi_wrap.
+* `OVERPASS_USE_AREAS` - if `false` initial area generation and the area updater process will be disabled. Default `true`.
+* `OVERPASS_HEALTHCHECK` - shell commands to execute to verify that image is healthy. `exit 1` in case of failures, `exit 0` when container is healthy. Default healthcheck queries overpass and verifies that there is reponse returned
+* `OVERPASS_STOP_AFTER_INIT` - if `false` the container will keep runing after init is complete. Otherwise container will be stopped after initialization process is complete. Default `true`
 
 ### Modes
 
@@ -48,6 +51,8 @@ The Overpass API will then be available at `http://localhost:80/api/interpreter`
 Container includes binaries of pyosmium (in `/app/venv/bin/`) and osmium-tool (in `/usr/bin`)
 
 All data resides within the `/db` directory in the container.
+
+For convenience, a [`docker-compose.yml` template](./docker-compose.yml) is included.
 
 # Examples
 ## Overpass instance covering part of the world
@@ -116,7 +121,24 @@ docker run \
     --name overpass_monaco wiktorn/overpass-api
 ```
 
-## How to use Overpass after deploying using above examples
+## Healthcheck checking that instance is up-to-date
+Using following environment variable:
+```
+-e OVERPASS_HEALTHCHECK='
+  OVERPASS_RESPONSE=$(curl -s "http://localhost/api/interpreter?data=\[out:json\];node(1);out;" | jq -r .osm3s.timestamp_osm_base)
+  OVERPASS_DATE=$(date -d "$OVERPASS_RESPONSE" +%s)
+  TWO_DAYS_AGO=$(($(date +%s) - 2*86400)) ;
+  if [ ${OVERPASS_DATE} -lt ${TWO_DAYS_AGO} ] ; then
+    echo "Overpass out of date. Overpass date: ${OVERPASS_RESPONSE}"
+    exit 1;
+  fi
+  echo "Overpass date: ${OVERPASS_RESPONSE}"
+'
+```
+healthcheck will verify the date of last update of Overpass instance and if data in instance are earlier than two days ago, healthcheck will fail.
+
+
+# How to use Overpass after deploying using above examples
 The Overpass API will be exposed on the port exposed by `docker run` - for example `http://localhost:12346/api/interpreter`.
 
 You may then use this directly as an Overpass API url, or use it within [Overpass Turbo](http://overpass-turbo.eu/).
@@ -124,4 +146,3 @@ You may then use this directly as an Overpass API url, or use it within [Overpas
 Try a direct query with `http://localhost:12346/api/interpreter?data=node(3470507586);out geom;`, which should return a pub in Dublin.
 
 To use the API in Overpass Turbo, go to settings and set Server to`http://localhost:12346/api/`. Now you will use your local Overpass instance for your queries.
-
